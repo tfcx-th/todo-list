@@ -12,33 +12,13 @@
   <div class="container">
     <h1>我的Todo</h1>
     <form class="add-task">
-      <input type="text" name="content" autofocus autocomplete="off" placeholder="e.g. 下午记得写代码">
+      <input type="text" name="content" autofocus autocomplete="off" placeholder="比如：下午记得写代码">
       <button type="submit">submit</button>
     </form>
     <div class="task-list">
-      <div class="task-item">
-        <span><input type="checkbox"></span>
-        <span class="task-content"></span>
-        <span class="detail"></span>
-        <span class="action"> 详细</span>
-        <span class="action"> 删除</span>
-      </div>
     </div>
     <div class="task-detail-mask"></div>
-    <div class="task-detail">
-      <div class="content">
-          下午记得写代码
-      </div>
-      <div>
-        <div class="desc">
-          <textarea cols="30" rows="10"></textarea>
-        </div>
-      </div>
-      <div class="remind">
-        <input type="date">
-        <!-- <button type="submit">submit</button> -->
-      </div>
-    </div>
+    <div class="task-detail"></div>
   </div>
   <script src="js/jquery-3.3.1.js"></script>
   <script src="js/store.js"></script>
