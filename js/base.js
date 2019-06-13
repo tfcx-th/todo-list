@@ -7,6 +7,7 @@
       $task_detail = $('.task-detail'),
       $task_detail_mask = $('.task-detail-mask'),
       $task_detail_content,
+      $checkbox_complete,
       currentIndex,
       $update_form,
       task_list = [];
@@ -45,8 +46,7 @@
 
   function update_task(index, data) {
     if (index === undefined || !task_list[index]) return;
-    task_list[index] = data;
-    console.log(index,store.get('task_list'))
+    task_list[index] = $.extend({}, task_list[index], data);
     refresh_task_list();
   }
 
@@ -74,7 +74,7 @@
     $update_form = $task_detail.find('form');
 
     $task_detail_content = $update_form.find('.task-detail-content');
-    $task_detail_content.on('dblclick', function () {
+    $task_detail_content.on('click', function () {
       $task_detail_content.hide();
       $update_form.find('[name=content]').show();
     })
@@ -86,7 +86,7 @@
       $task_detail_desc.hide();
       $update_form.find('[name=desc]').show();
     }
-    $task_detail_desc.on('dblclick', function () {
+    $task_detail_desc.on('click', function () {
       $task_detail_desc.hide();
       $update_form.find('[name=desc]').show();
     })
@@ -110,9 +110,24 @@
   function listen_task_delete() {
     $delete_task_trigger.on('click', function () {
       var $item = $(this).parent();
+      console.log($item)
       confirm('确定删除？') ? delete_task($item.data('index')) : null;
       refresh_task_list();
     });
+  }
+
+  function listen_checkbox_complete() {
+    $checkbox_complete.on('click', function () {
+      var $this = $(this).parent().parent();
+      var index = $this.data('index');
+      var item = store.get('task_list')[index];
+      if (item && item.complete) {
+        update_task(index, { complete: false });
+      } else {
+        update_task(index, { complete: true });
+      }
+      console.log(item);
+    })
   }
 
   function refresh_task_list() {
@@ -120,12 +135,14 @@
     render_task_list();
     listen_task_delete();
     listen_task_detail();
+    listen_checkbox_complete();
   }
 
   function delete_task(index) {
     if (index === undefined || !task_list[index]) {
       return;
     }
+    console.log(1)
     delete task_list[index];
   }
 
@@ -133,7 +150,7 @@
     if (!data || index === undefined) return;
     var list_item_template = 
       `<div class="task-item" data-index=${index}>
-        <span><input type="checkbox"></span>
+        <span><input class="complete" ${data.complete ? 'checked' : ''} type="checkbox"></span>
         <span class="task-content">${data.content}</span>
         <span class="action detail"> 详细</span>
         <span class="action delete"> 删除</span>
@@ -143,12 +160,22 @@
 
   function render_task_list() {
     $('.task-list').html('');
+    var complete_items = [];
     for (var i = 0; i < task_list.length; i++) {
-      var $task = render_task_item(task_list[i], i);
-      $('.task-list').prepend($task);
+      if (task_list[i] && task_list[i].complete) {
+        // complete_items.push(task_list[i]);
+        $task = render_task_item(task_list[i], i);
+        $task.addClass('completed');
+        $('.task-list').append($task);
+      } else {
+        var $task = render_task_item(task_list[i], i);
+        $('.task-list').prepend($task);
+      }      
     }
+
     $delete_task_trigger = $('.action.delete');
     $detail_task_trigger = $('.action.detail');
+    $checkbox_complete = $('.task-list .complete');
   }
 
   function add_task(new_task) {
