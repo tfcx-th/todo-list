@@ -64,12 +64,15 @@
           <textarea name="desc">${item.desc || ''}</textarea>
         </div>
         <div class="remind">
-          <input name="remind_date" type="date" value="${item.remind_date}">
+          <label>提醒时间</label>
+          <input class="datetime" name="remind_date" type="text" value="${item.remind_date || ''}">
         </div>
         <button type="submit">更新</button>
       </form>`;
     $task_detail.html('');
     $task_detail.html(template);
+    
+    $('.datetime').datetimepicker();
 
     $update_form = $task_detail.find('form');
 
@@ -163,7 +166,6 @@
     var complete_items = [];
     for (var i = 0; i < task_list.length; i++) {
       if (task_list[i] && task_list[i].complete) {
-        // complete_items.push(task_list[i]);
         $task = render_task_item(task_list[i], i);
         $task.addClass('completed');
         $('.task-list').append($task);
@@ -184,9 +186,33 @@
     return true;
   }
 
+  function notify(content) {
+    $('.msg').html(content).show(300);
+  }
+
+  function task_remind_check() {
+    var current_timestamp, task_timestamp;
+    var timer = setInterval(function () {
+      for (var i = 0; i < task_list.length; i++) {
+        var item = store.get('task_list')[i];
+
+        if (!item || !item.remind_date || item.informed) continue;
+
+        current_timestamp = (new Date()).getTime();
+        task_timestamp = (new Date(item.remind_date)).getTime();
+
+        if (current_timestamp - task_timestamp >= 1) {
+          update_task(i, { informed: true });
+          notify(item.content);
+        }
+      }
+    }, 500);
+  }
+
   function init() {
     task_list = store.get('task_list') || [];
     refresh_task_list();
+    task_remind_check();
   }
 
 })();

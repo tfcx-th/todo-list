@@ -7,6 +7,12 @@ body {
     background: #00334b;
     color: white;
 }
+.msg {
+    display: none;
+    padding: 10px;
+    background: #ffe264;
+    text-align: center;
+}
 .container {
     position: relative;
     max-width: 900px;
