@@ -173,3 +173,8 @@ textarea {
 .action:hover {
     color: #333;
 }
+.pop-content button {
+    margin: 30px 10px 0 10px;
+    background: #46b1e4;
+    color: #000;
+}

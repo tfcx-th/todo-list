@@ -113,8 +113,9 @@
   function listen_task_delete() {
     $delete_task_trigger.on('click', function () {
       var $item = $(this).parent();
-      console.log($item)
-      confirm('确定删除？') ? delete_task($item.data('index')) : null;
+      pop('确定删除？').then(function (r) {
+        r ? delete_task($item.data('index')) : null;
+      })
       refresh_task_list();
     });
   }
@@ -129,7 +130,6 @@
       } else {
         update_task(index, { complete: true });
       }
-      console.log(item);
     })
   }
 
@@ -147,6 +147,116 @@
     }
     console.log(1)
     delete task_list[index];
+  }
+
+  function pop(arg) {
+    if (!arg) {
+      console.error('pop title is required');
+    }
+
+    var conf = {}, $box, $mask;
+    var dfd = $.Deferred();
+
+    if (typeof arg == 'string') {
+      conf.title = arg;
+    } else {
+      conf = $.extend(conf, arg);
+    }
+
+    $box = $(`<div>
+      <div class="pop-title">${conf.title}</div>
+      <div class="pop-content">
+        <button class="pop-btn confirm">确定</button>
+        <button class="cancel">取消</button>
+      </div>
+    </div>`).css({
+      position: 'fixed',
+      'padding-top': '10px',
+      width: 250,
+      height: 150,
+      'border-radius': 3,
+      color: '#000',
+      background: '#fff',
+      'box-shadow': '0 1px 2px rgba(0, 0, 0, 0.5)'
+    });
+
+    $title = $box.find('.pop-title').css({
+      padding: '15px 10px',
+      'font-size': 20,
+      'font-weight': 900,
+      'text-align': 'center'
+    });
+
+    $content = $box.find('.pop-content').css({
+      padding: '0px 10px',
+      'font-weight': 900,
+      'text-align': 'center'
+    });
+
+    var $confirm = $content.find('button.confirm'),
+        confirmed;
+
+    var timer = setInterval(function () {
+      if (confirmed !== undefined) {
+        dfd.resolve(confirmed);
+        clearInterval(timer);
+        dismiss_pop();
+      }
+    }, 50);
+
+    function dismiss_pop() {
+      $mask.remove();
+      $box.remove();
+    }
+
+    $confirm.on('click', function () {
+      confirmed = true;
+    });    
+
+    var $cancel = $content.find('button.cancel').css({
+      background: '#aaa'
+    });
+
+    $cancel.on('click', function () {
+      confirmed = false;
+    })
+
+    $mask = $('<div></div>').css({
+      position: 'fixed',
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      background: 'rgba(0, 0, 0, 0.5)'
+    });
+
+    $mask.on('click', function () {
+      confirmed = false;
+    })
+
+    function adjust_box_position() {
+      var window_width = $(window).width(),
+          window_height = $(window).height(),
+          box_wdith = $box.width(),
+          box_height = $box.height();
+      var move_x = (window_width - box_wdith) / 2,
+          move_y = (window_height - box_height) / 2 - 80;
+        
+      $box.css({
+        left: move_x,
+        top: move_y
+      });
+    }
+
+    $(window).on('resize', function () {
+      adjust_box_position();
+    });
+
+    $mask.appendTo($('body'));
+    $box.appendTo($('body'));
+    adjust_box_position();
+    
+    return dfd.promise();
   }
 
   function render_task_item(data, index) {
@@ -187,7 +297,14 @@
   }
 
   function notify(content) {
-    $('.msg').html(content).show(300);
+    $('.msg').find('.msg-content').html(content)
+    $('.msg').show();
+  }
+
+  function listen_msg_event() {
+    $('.msg').find('button').on('click', function () {
+      $('.msg').hide();
+    })
   }
 
   function task_remind_check() {
@@ -202,8 +319,9 @@
         task_timestamp = (new Date(item.remind_date)).getTime();
 
         if (current_timestamp - task_timestamp >= 1) {
+          notify();
           update_task(i, { informed: true });
-          notify(item.content);
+          notify();
         }
       }
     }, 500);
@@ -211,6 +329,7 @@
 
   function init() {
     task_list = store.get('task_list') || [];
+    listen_msg_event();
     refresh_task_list();
     task_remind_check();
   }
