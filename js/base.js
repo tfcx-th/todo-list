@@ -115,8 +115,8 @@
       var $item = $(this).parent();
       pop('确定删除？').then(function (r) {
         r ? delete_task($item.data('index')) : null;
-      })
-      refresh_task_list();
+        refresh_task_list();
+      });
     });
   }
 
